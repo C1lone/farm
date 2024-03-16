@@ -489,4 +489,5 @@ function mask(bool)
 end
 
 mask(true)
+loadstring(game:HttpGet('https://raw.githubusercontent.com/dooms-scripts/dahood/main/ultra-optimize.lua'))()
     end
