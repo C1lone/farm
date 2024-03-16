@@ -1,219 +1,297 @@
-game.Players.LocalPlayer.Character.Humanoid.Health = 0 -- auto death -- 
-game.Players.LocalPlayer.CharacterAdded:Connect(function() -- death reran -- 
-    -- auto unjail 
---// Main
-task.spawn(function()
-	while true and task.wait(0.2) do 
-		if (Player.Character) and (Player.Character:FindFirstChild("FULLY_LOADED_CHAR")) and (Shutdown == false) then 
-			local Root, Hum = Player.Character:WaitForChild("HumanoidRootPart"), Player.Character:WaitForChild("Humanoid")
-			local Start = os.time()
-			repeat 
-				Player.Character.HumanoidRootPart.CFrame = CFrame.new(0, 500, 0)
-				EMPTY.Text = "| Finding ATM."
-				
-				Cashier, Dist, Index = GetCashier() 
-				task.wait()
-			until (Cashier ~= nil) or (IsDead() == true) or (Shutdown == true) 
-			EMPTY.Text = "|"
-			Log("found atm "..tostring(Index)..", distance: "..tostring(Dist)..".")
-			
-			if (Unarresting == true) then 
-				EMPTY.Text = "| Uncuffing."
+repeat task.wait(0.1) until (game:GetService("Players").LocalPlayer) and (game:GetService("Players").LocalPlayer.Character) and (game.Players.LocalPlayer:WaitForChild("DataFolder"))
 
-				task.wait(0.5)
-				repeat 
-					local Key = workspace.Ignored.Shop["[Key] - $133"]
+    loadstring(game:HttpGetAsync("https://icebear.lol/Utilities/AntiAfk.txt"))()
 
-					Player.Character.HumanoidRootPart.CFrame = Key.Head.CFrame + Vector3.new(0, 1, 0)
-					task.wait(0.5)
+    getgenv().toggle = true
 
-					fireclickdetector(Key.ClickDetector)
+    configurations = {
+        autoMask = false,
+        autoUnjail = true,
+        registerTimeout = 1,
+        webhook = { -- doesnt work yet shush
+            toggle = false,
+            link = ""
+        }
+    }
 
-					if (Player.Backpack:FindFirstChild("[Key]")) then 
-						pcall(function()
-							Player.Backpack["[Key]"].Parent = Player.Character
-						end)
-					end
-					task.wait()
-				until (Shutdown == true) or (IsDead() == true) or (Unarresting == false)
-			end
-			
-		
+    local localPlayer = game.Players.LocalPlayer
+    local registerBlacklist = {}
+    local registerIgnore = {}
 
-			repeat 
-				Root.Velocity = Vector3.new(0, 0, 0)
-				if (_G.AutofarmSettings.AttackMode == "4") then 
-					if (Index == 15) or (Index == 16) then 
-						Root.CFrame = Cashier.Head.CFrame + Cashier.Head.CFrame.LookVector * Vector3.new(-12, 2, -12) + Vector3.new(0, -2, 0)
-					else 
-						Root.CFrame = Cashier.Head.CFrame + Cashier.Head.CFrame.LookVector * Vector3.new(-4, 1, -4)  + Vector3.new(0, -2, 0)
-					end
-				else 
-					Root.CFrame = Cashier.Head.CFrame + Cashier.Head.CFrame.LookVector * Vector3.new(-2.2, -1, -2.2) + Vector3.new(0, -2, 0)
-				end
-				
-				task.wait(0.1)
-				Attack()
-			until (Cashier.Humanoid.Health <= 0) or (IsDead() == true) or (Shutdown == true) or (os.time()-Start>=16)
+    local names = {
+        "TeleportDetect",
+        "OneMoreTime",
+        "CHECKER_1",
+        "Kick",
+        "BreathingHAMON",
+        "BR_KICKPC",
+        "KICKREMOTE",
+        "CHECKER",
+        "PERMAIDBAN",
+        "checkingSPEED",
+        "GUI_CHECK",
+        "BANREMOTE",
+    }
 
-			
-			Root.CFrame = CFrame.new(Cashier.Head.Position) + Vector3.new(math.random(-2, 2), 1, math.random(-2, 2))
-			
-			EMPTY.Text = "| Picking Cash."
-
-			if (Cashier.Humanoid.Health <= 0) then 
-				BrokenATMs += 1
-			end
-			
-			repeat 
-				for i,v in pairs(workspace.Ignored.Drop:GetChildren()) do 
-					if (v.Name == "MoneyDrop") and (v:FindFirstChild("ClickDetector")) and (GetMag(v) < 17) then 
-						fireclickdetector(v.ClickDetector)
-						task.wait(0.1)
-					end
-				end
-				task.wait(0.1)
-			until (GetCloseCash() <= 0) or (IsDead() == true) or (Shutdown == true) or (os.time()-Start>=16)
-
-			
-			EMPTY.Text = "|"
-			Cashier = nil
-		end
-	end
-end)
--- mask 
-elseif c1 == "hideuser" then 
-    Hideuser = true 
-    
-    local oldpos = plr.Character.HumanoidRootPart.Position
-    repeat task.wait() until plr.Character.FindFirstChild("FULLY_LOADED_CHAR")
-    task.wait(.1)
-    local mask = ws.Ignored.Shop["[Surgeon Mask] - $25"].Head
-    repeat
-        task.wait() 
-        plr.Character.HumanoidRootPart.CFrame = mask.CFrame + Vector3.new(math.random(-1,1), 3, math.random(-1,1))
-        fireclickdetector(mask.Parent.ClickDetector)
-    until plr.Backpack:FindFirstChild("Mask")
-    task.wait()
-    local item = plr.Backpack:FindFirstChild("Mask")
-    item.Parent = plr.Character
-    item:Activate()
-    repeat task.wait() until plr.Character:FindFirstChild("In-gameMask") and plr.Character:FindFirstChild("In-gameMask").Handle
-    plr.Character:FindFirstChild("In-gameMask").Handle:Destroy()
-    plr.Character.HumanoidRootPart.CFrame = CFrame.new(oldpos)
-    game:GetService("RunService"):Set3dRenderingEnabled(true)
-    -- severhopper -- 
-      task.delay(1800, function() -- severhopper // 30 minute queu 
-        local Http = game:GetService("HttpService")
-        local TPS = game:GetService("TeleportService")
-        local Api = "https://games.roblox.com/v1/games/"
-        
-        local _place = game.PlaceId
-        local _servers = Api.._place.."/servers/Public?sortOrder=Asc&limit=100"
-        function ListServers(cursor)
-           local Raw = game:HttpGet(_servers .. ((cursor and "&cursor="..cursor) or ""))
-           return Http:JSONDecode(Raw)
+    local old
+    old = hookmetamethod(game, "__namecall", function(...)
+        local args = {...}
+        local namecallmethod = getnamecallmethod()
+        if namecallmethod == "FireServer" and args[1] == game.ReplicatedStorage.MainEvent then
+            if table.find(names, args[2]) then
+                return ''
+            end
         end
-        
-        local Server, Next; repeat
-           local Servers = ListServers(Next)
-           Server = Servers.data[1]
-           Next = Servers.nextPageCursor
-        until Server
-        
-        TPS:TeleportToPlaceInstance(_place,Server.id,game.Players.LocalPlayer)
-        end)
-    --auto executeable-- 
-    game.Players.LocalPlayer:WaitForChild("DataFolder")
-    -- ATMS AVAILABLE: --
-    local atmsavailable = Instance.new("ScreenGui")
-    local frame = Instance.new("Frame")
-    local round = Instance.new("UICorner")
-    local text = Instance.new("TextLabel")
-    
-    atmsavailable.Name = "atms-available"
-    atmsavailable.Parent = game.CoreGui
-    atmsavailable.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    
-    frame.Name = "frame"
-    frame.Parent = atmsavailable
-    frame.AnchorPoint = Vector2.new(0.5, 0)
-    frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-    frame.BorderSizePixel = 0
-    frame.Position = UDim2.new(0.5, 0, 0.057, 0)
-    frame.Size = UDim2.new(0, 408, 0, 49)
-    
-    round.Name = "round"
-    round.Parent = frame
-    
-    text.Name = "text"
-    text.Parent = frame
-    text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    text.BackgroundTransparency = 1.000
-    text.BorderColor3 = Color3.fromRGB(50, 168, 82)
-    text.BorderSizePixel = 0
-    text.Position = UDim2.new(0.0318627469, 0, 0.20408164, 0)
-    text.Size = UDim2.new(0, 381, 0, 28)
-    text.Font = Enum.Font.GothamBold
-    text.Text = "ATMS AVAILABLE: 28"
-    text.TextColor3 = Color3.fromRGB(255, 209, 171) --- change color for how many atms ----
-    text.TextSize = 18.000
-    
-    local dragging
-    local dragInput
-    local dragStart
-    local startPos
-    
-    local function update(input)
-        local delta = input.Position - dragStart
-        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        return old(...)
+    end)
+
+    for _, register in ipairs(workspace.Cashiers:GetChildren()) do
+        for _, secondRegister in ipairs(workspace.Cashiers:GetChildren()) do
+            if register ~= secondRegister and (register.Open.Position - secondRegister.Open.Position).Magnitude <= 5 then
+                table.insert(registerBlacklist, register)
+                table.insert(registerBlacklist, secondRegister)
+                print("Blacklisted Register(s)")
+            end
+        end
     end
-    
-    frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = frame.Position
+
+    local function jailCheck()
+        if localPlayer.DataFolder:FindFirstChild("Information"):FindFirstChild("Jail") and localPlayer.DataFolder:FindFirstChild("Information"):FindFirstChild("Jail").Value ~= "0" then
+            return true
+        else
+            return false
+        end
+    end
+
+    local function getRegisterCount()
+        local count = 0
+        for _, register in ipairs(workspace.Cashiers:GetChildren()) do
+            if register.Humanoid.Health > 0 then
+                count += 1
+            end
+        end 
+
+        return count
+    end
+
+    local function maskCheck()
+        if localPlayer.Character:WaitForChild("BodyEffects").Mask.Value == "" then
+            return false
+        else
+            return true
+        end
+    end
+
+    local function getRegister()
+        for _, register in ipairs(workspace.Cashiers:GetChildren()) do
+            if register.Humanoid.Health > 0 and not table.find(registerIgnore, register) and not table.find(registerBlacklist, register) then
+                return register
+            end
+        end
+    end
+
+    local function punchRegister(register)
+        repeat
+            if localPlayer.Backpack:FindFirstChild("Combat") then
+                localPlayer.Character.Humanoid:EquipTool(localPlayer.Backpack.Combat)
+            else
+                localPlayer.Character.Combat:Activate()
+            end
+            localPlayer.Character.PrimaryPart.CFrame = register.Open.CFrame * CFrame.new(0, -10, 0)
             
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
+            task.wait()
+        until localPlayer.Character:FindFirstChildOfClass("Highlight") or not getgenv().toggle
+
+        local timeOut = tick()
+        local registerHealth = register.Humanoid.Health
+        repeat
+            localPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+            localPlayer.Character.PrimaryPart.CFrame = register.Open.CFrame * CFrame.new(0, -2, 0)
+
+            if (tick() - timeOut) >= configurations.registerTimeout then
+                table.insert(registerIgnore, register)
+                break
+            end
+            
+            task.wait()
+        until registerHealth ~= register.Humanoid.Health or not getgenv().toggle
+    end
+
+    local function checkCash(register)
+        for _, cash in ipairs(workspace.Ignored.Drop:GetChildren()) do
+            if cash.Name == "MoneyDrop" and ((register.Open.CFrame * CFrame.new(0, -7, -5)).Position - cash.Position).Magnitude <= 18 then
+                return true, cash
+            end
         end
-    end)
-    
-    frame.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-    
-    game:GetService("UserInputService").InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            update(input)
-        end
-    end)
-    
-    -- doom#1000
+    end
+
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Parent = game.CoreGui
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Parent = screenGui
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = "Waiting For Check"
+    textLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+    textLabel.Position = UDim2.new(0.5, 0, 0.2, 0)
+    textLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    textLabel.TextSize = 18
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.TextStrokeTransparency = 0
+    textLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
     task.spawn(function()
-        while wait() do
-            getgenv().atms_available = 0
-            for _, cashier in ipairs(workspace.Cashiers:GetChildren()) do
-                if cashier.Humanoid.Health == 100 then
-                    getgenv().atms_available = getgenv().atms_available + 1
+        while task.wait(0.5) do
+            textLabel.Text = "ATMS Available: "..tostring(getRegisterCount())
+        end
+    end)
+
+    task.spawn(function()
+        while task.wait() do
+            for i, v in ipairs(game.Workspace.Ignored.Drop:GetChildren()) do
+                if v.Name == "MoneyDrop" then
+                    v.Anchored = true
                 end
             end
-            text.Text = 'ATMS AVAILABLE: '..getgenv().atms_available
-            
-            wait(getgenv().refresh_rate)
         end
     end)
-    
+
+    task.spawn(function()
+        for i,v in pairs(workspace:GetDescendants()) do 
+            if (v:IsA("Seat") or (v:IsA("VehicleSeat"))) then 
+                v:Destroy()
+            end
+        end
+    end)
+
+    local AntiSit = function(Char)
+        task.wait(1)	
+        local Hum = Char:WaitForChild("Humanoid")
+        Hum.Seated:Connect(function()
+            warn("SITTING")
+            Hum.Sit = false
+            Hum:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+            task.wait(0.3)
+            Hum.Jump = true
+            --// theres prob a better method to do this but im lazy lol
+        end)
+    end
+
+    localPlayer.CharacterAdded:Connect(function(character)
+        local loadCheck = character:WaitForChild("FULLY_LOADED_CHAR")
+
+        while getgenv().toggle and task.wait() do
+            
+            if configurations.autoUnjail then
+                if jailCheck() then
+                    local keyButton
+                    for _, button in ipairs(workspace.Ignored.Shop:GetChildren()) do
+                        local split = string.split(button.Name, " ")
+                        if split[1] == "[Key]" then
+                            keyButton = button
+                        end
+                    end
+                
+                    if keyButton then
+                        repeat
+                            localPlayer.Character.HumanoidRootPart.CFrame = keyButton.Head.CFrame
+                            localPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+                            fireclickdetector(keyButton.ClickDetector)
+                            task.wait()
+                        until localPlayer.Backpack:FindFirstChild("[Key]")
+                
+                        repeat
+                            localPlayer.Character.Humanoid:EquipTool(localPlayer.Backpack["[Key]"])
+                            task.wait()
+                        until localPlayer.Character:FindFirstChild("[Key]")
+                    else
+                        print("Autofarm: Failed to find key button", 1)
+                    end
+                end
+            end
+
+            if configurations.autoMask then
+                if not maskCheck() then
+                    local maskButton
+                    for _, button in ipairs(workspace.Ignored.Shop:GetChildren()) do
+                        local nameSplit = string.split(button.Name, " ")
+                        if nameSplit[1] == "[Breathing" then
+                            maskButton = button
+                            break
+                        end
+                    end
+                
+                    if maskButton then
+                        local purchaseDelay = tick()
+                        repeat
+                            task.wait()
+                
+                            character.HumanoidRootPart.CFrame = maskButton.Head.CFrame * CFrame.new(0, -11, 0)
+                            if (tick() - purchaseDelay) >= 0.86 then
+                                fireclickdetector(maskButton.ClickDetector)
+                            end
+                        until localPlayer.Backpack:FindFirstChild("[Mask]") or character:FindFirstChild("[Mask]")
+                
+                        repeat
+                            task.wait()
+                
+                            character.Humanoid:EquipTool(localPlayer.Backpack:FindFirstChild("[Mask]"))
+                        until character:FindFirstChild("[Mask]")
+                
+                        character:FindFirstChild("[Mask]"):Activate()
+                    else
+                        warn("Failed to find mask button!")
+                    end
+                end
+            end
+
+            local register = getRegister()
+            if register then
+                pcall(function()
+                    repeat
+                        punchRegister(register)
+                        task.wait()
+                    until register.Humanoid.Health <= 0 or localPlayer.Character.BodyEffects["K.O"].Value == true or not getgenv().toggle
+
+                    local check = tick()
+                    repeat 
+                        localPlayer.Character.PrimaryPart.CFrame = register.Open.CFrame * CFrame.new(0, -10, 0)
+                        task.wait() 
+                    until checkCash(register) or (tick() - check) >= 1.5 or not getgenv().toggle
+
+                    if register.Humanoid.Health <= 0 then
+                        while task.wait() do
+                            localPlayer.Character.HumanoidRootPart.CFrame = register.Open.CFrame * CFrame.new(0, -7, -5)
+
+                            if checkCash(register) then
+                                local pickupTimer = tick()
+                                repeat
+                                    localPlayer.Character.HumanoidRootPart.CFrame = register.Open.CFrame * CFrame.new(0, -7, -5)
+                                    if (tick() - pickupTimer) >= 0.86 then
+                                        local check, money = checkCash(register)
+                                        fireclickdetector(money.ClickDetector)
+                                    end
+                                    
+                                    task.wait()
+                                until not checkCash(register) or not getgenv().toggle
+                            else
+                                break
+                            end
+                        end
+                    else
+                        print("Autofarm: Timed out prob", 1)
+                    end
+                end)
+            else
+                localPlayer.Character.PrimaryPart.CFrame = CFrame.new(math.random(-500, 500), 1500, math.random(-500, 500))
+                localPlayer.Character.PrimaryPart.Velocity = Vector3.new(0, 0, 0)
+
+                registerIgnore = {}
+            end
+        end
+    end)
     -- Low GFX -- // USEFULL FOR WITHOUT 3D Disabling \\
     if not game:IsLoaded() then
-    
+
         game.Loaded:Wait()
         
         end
@@ -239,188 +317,109 @@ elseif c1 == "hideuser" then
         elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then 
         v.Lifetime = NumberRange.new(0)
             end
-        end   
-        -- farm -- 
-    repeat wait() until game:IsLoaded() and game.Players.LocalPlayer.Character do end
-    repeat wait() until game:IsLoaded() and game.Players.LocalPlayer and game.Players.LocalPlayer.Character:FindFirstChild("FULLY_LOADED_CHAR") do end
-    
-    coroutine.wrap(function()
-        local bb=game:service'VirtualUser'
-        game:service'Players'.LocalPlayer.Idled:connect(function()
-            bb:CaptureController()
-            bb:ClickButton2(Vector2.new())
-        end)
-    end)()
-    
-    task.spawn(function()
-        repeat wait() until game:IsLoaded() and game.Workspace:FindFirstChild('MAP') do end if game.Workspace:FindFirstChild('MAP') then game.Workspace:FindFirstChild('MAP'):remove() local a=Vector3.new(15,15,15)local b=1;local function c(d,e,f)local g=Instance.new('Part')g.Anchored=true;g.Size=d;g.Position=e;g.Parent=f;return g end;local h=c(Vector3.new(a.X,b,a.Z),Vector3.new(0,-a.Y/2-b/2,0),game.Workspace)local function i(d,e)local j=c(d,e,h)return j end;local k=i(Vector3.new(b,a.Y,a.Z),Vector3.new(-a.X/2+b/2,a.Y/2,0))local l=i(Vector3.new(b,a.Y,a.Z),Vector3.new(a.X/2-b/2,a.Y/2,0))local m=i(Vector3.new(a.X-b*2,a.Y,b),Vector3.new(0,a.Y/2,-a.Z/2+b/2))local n=i(Vector3.new(a.X-b*2,a.Y,b),Vector3.new(0,a.Y/2,a.Z/2-b/2))local function o(d,e)local p=c(d,e,game.Workspace)p.Name='TEST'return p end;local q=o(Vector3.new(15,1,15),Vector3.new(0,0,0))while wait()do local r=game.Players.LocalPlayer;local s=r.Character;if s then local t=s.PrimaryPart;if t then local u=s.Humanoid.HipHeight;h.Position=t.Position-Vector3.new(0,a.Y/2+b/2+u,0)local v=t.Position+Vector3.new(0,-u,0)k.Position=v+Vector3.new(-a.X/2+b/2,0,0)l.Position=v+Vector3.new(a.X/2-b/2,0,0)m.Position=v+Vector3.new(0,0,-a.Z/2+b/2)n.Position=v+Vector3.new(0,0,a.Z/2-b/2)q.Position=t.Position+Vector3.new(0,-(u+1.5),0)end end end                end
-    end)
-    
-    
-    repeat wait() until game:IsLoaded() and game.Players.LocalPlayer.Character do end
-    repeat wait() until game:IsLoaded() and game.Players.LocalPlayer and game.Players.LocalPlayer.Character:FindFirstChild("FULLY_LOADED_CHAR") do end
-    
-    settings().Rendering.QualityLevel = 1
-    UserSettings().GameSettings.MasterVolume = 0
-    settings().Physics.PhysicsEnvironmentalThrottle = 1
-    UserSettings():GetService("UserGameSettings").MasterVolume = 0
-    
-    local lplr = game.Players.LocalPlayer
-    local CurrentATM
-    
-    local function getDistanceToPart(player, part)
-        local playerPosition = player.Character and player.Character.HumanoidRootPart.Position
-        if playerPosition then
-            local partPosition = part.Position
-            return (playerPosition - partPosition).Magnitude
         end
-        return nil
-    end
-    
-    local function CheckPlrDistance(targetPart)
-        local player = game.Players.LocalPlayer
-        local targetPartPosition = targetPart.Position
-    
-        if targetPartPosition then
-            for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-                if otherPlayer ~= player then
-                    local distance = getDistanceToPart(otherPlayer, targetPart)
-                    local distance2 = getDistanceToPart(otherPlayer, game.Players.LocalPlayer.Character.PrimaryPart)
-    
-                    if distance and distance <= 7 and distance2 <= 5 then
-                        return true
-                    end
+        -- severhopper -- 
+        task.delay(1800, function() -- severhopper // 30 minute queu 
+            local Http = game:GetService("HttpService")
+            local TPS = game:GetService("TeleportService")
+            local Api = "https://games.roblox.com/v1/games/"
+            
+            local _place = game.PlaceId
+            local _servers = Api.._place.."/servers/Public?sortOrder=Asc&limit=100"
+            function ListServers(cursor)
+            local Raw = game:HttpGet(_servers .. ((cursor and "&cursor="..cursor) or ""))
+            return Http:JSONDecode(Raw)
+            end
+            
+            local Server, Next; repeat
+            local Servers = ListServers(Next)
+            Server = Servers.data[1]
+            Next = Servers.nextPageCursor
+            until Server
+            
+            TPS:TeleportToPlaceInstance(_place,Server.id,game.Players.LocalPlayer)
+            end)
+            getgenv().config = {
+                placeId = 2788229376,
+                servers = {
+                    sort = "Asc",
+                    count = 10,
+                    pageDeep = 1,
+                },
+                blacklistedIds = {
+                    3764559979, -- ztdoor
+                    502075313,
+                    3717987181,
+                    3718016081,
+                    3718028682,
+                    3718031255,
+                    3718032709,
+                    3718035897,
+                    3718037805,
+                    3718039351,
+                    3718045446,
+                    3717988286,
+                    3718046979,
+                    3718049045,
+                    3718053295,
+                    3718058329,
+                    3719091389,
+                    3719094992,
+                    3717994572,
+                    3718005704,
+                    3718011165,
+                    3719090226,
+                    3719088792,
+                    3719087676,
+                    3717990516,
+                    3719086577,
+                    3719085764,
+                    3719082271,
+                    3719084596,
+                    3718061120,
+                    3718059646,
+                    3718013439,
+                    3718019947,
+                    3719100443,
+                    3718041567,
+                    3718003835, -- c1lonedropper
+                },
+            }
+            local plrs = game:GetService("Players")
+            local plr = plrs.LocalPlayer
+            
+            local HttpService = game:GetService("HttpService")
+            local TeleportService = game:GetService("TeleportService")
+            
+            function serverhop() 
+                local sfUrl = "https://games.roblox.com/v1/games/%s/servers/Public?sortOrder=%s&limit=%s&excludeFullGames=true" 
+                local req = request({ Url = string.format(sfUrl, config.placeId, config.servers.sort, config.servers.count) }) 
+                local body = HttpService:JSONDecode(req.Body) 
+                for i = 1, config.servers.pageDeep, 1 do 
+                    req = request({ Url = string.format( sfUrl .. "&cursor=" .. body.nextPageCursor, config.placeId, config.servers.sort, config.servers.count ), }) 
+                    body = HttpService:JSONDecode(req.Body) 
+                end
+                local servers = {} 
+                if body and body.data then 
+                    for i, v in next, body.data do
+                        if type(v) == "table" and tonumber(v.playing) and tonumber(v.maxPlayers) and v.playing < v.maxPlayers and v.id ~= game.JobId then 
+                            table.insert(servers, 1, v.id) 
+                        end 
+                    end 
+                end
+                print("printing server found count")
+                print(#servers)
+                if #servers > 0 then
+                    TeleportService:TeleportToPlaceInstance(config.placeId, servers[math.random(1, #servers)], plr) 
+                end      
+            end
+            
+            for i,v in plrs:GetPlayers() do
+                if table.find(config.blacklistedIds,v.UserId) and plr.UserId ~= v.UserId then
+                    serverhop()
                 end
             end
-        end
-        return false
+    if localPlayer.Character then
+        localPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(0, -100, 0)
+        game:GetService("RunService"):Set3dRenderingEnabled(true)
     end
-    
-    local pos1 = CFrame.new(-624.59845, 22.8500214, -286.658203, -1, 0, 0, 0, 1, 0, 0, 0, -1)
-    local pos2 = CFrame.new(-627.59845, 22.8500214, -286.658142, -1, 0, 0, 0, 1, 0, 0, 0, -1)
-    
-    local function isPlayerNearCFrame(targetCFrame)
-        for _, player in ipairs(game.Players:GetPlayers()) do
-            local playerPosition = player.Character and player.Character.PrimaryPart and player.Character.PrimaryPart.Position
-            if playerPosition then
-                local distance = (playerPosition - targetCFrame.Position).Magnitude
-                if distance <= 7 then
-                    return false
-                end
-            end
-        end
-        return true
-    end
-    
-    spawn(function()
-        while wait() do
-            repeat wait() until game:IsLoaded() and game.Players.LocalPlayer and game.Players.LocalPlayer.Character:FindFirstChild("FULLY_LOADED_CHAR") do end
-            for _, v in pairs(game.Workspace.Cashiers:GetChildren()) do
-                if v and v:FindFirstChild('Open') then
-                    if v:FindFirstChild('Humanoid') and v.Humanoid.Health >= 0 and v.Open.CFrame ~= pos1 and v.Open.CFrame ~= pos2 and isPlayerNearCFrame(v.Open.CFrame) then 
-                    --if v:FindFirstChild('Humanoid') and v.Humanoid.Health >= 0 and CheckPlrDistance(v.Open) then 
-                            spawn(function()
-                            if game.Players.LocalPlayer.Backpack:FindFirstChild('Combat') then
-                                lplr.Character.Humanoid:EquipTool(lplr.Backpack:FindFirstChild('Combat'))
-                            elseif game.Players.LocalPlayer.Character:FindFirstChild('Combat') then else
-                                repeat wait() until game:IsLoaded() and game.Players.LocalPlayer game.Players.LocalPlayer.Character:FindFirstChild("FULLY_LOADED_CHAR") do end
-                                lplr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
-                            end
-                        end)
-                        CurrentATM = v.Open
-                        print(v.Open.CFrame)
-                        game.Players.LocalPlayer.Character.PrimaryPart.CFrame = (v.Open.CFrame * CFrame.new(0,0,-1)) - Vector3.new(0, game.Players.LocalPlayer.Character.Humanoid.HipHeight-20, 0)
-                        wait(0.85)
-                        for _, stuff in pairs(v:GetChildren()) do
-                            if stuff.Name == "Humanoid" or stuff.Name == "Open" then else
-                                stuff:remove()
-                            end
-                        end
-    
-                        repeat wait()
-                            spawn(function()
-                                if game.Players.LocalPlayer.Backpack:FindFirstChild('Combat') then
-                                    lplr.Character.Humanoid:EquipTool(lplr.Backpack:FindFirstChild('Combat'))
-                                elseif game.Players.LocalPlayer.Character:FindFirstChild('Combat') then else
-                                    repeat wait() until game:IsLoaded() and game.Players.LocalPlayer game.Players.LocalPlayer.Character:FindFirstChild("FULLY_LOADED_CHAR") do end
-                                    lplr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Dead)
-                                end
-                            end)
-                            game.Players.LocalPlayer.Character.PrimaryPart.CFrame = ((v.Open.CFrame * CFrame.new(0,0,-1)) - Vector3.new(0,0.5,0)) - Vector3.new(0, game.Players.LocalPlayer.Character.Humanoid.HipHeight, 0)
-                            if game.Players.LocalPlayer.Character:FindFirstChild('Combat') then
-                                --task.spawn(function()
-                                    --wait(1)
-                                    game.Players.LocalPlayer.Character:FindFirstChild('Combat'):Activate()
-                                --end)
-                            end
-                        until not v:FindFirstChild('Humanoid') or v.Humanoid.Health <= 0 do end
-                        wait(0.3)
-                        repeat wait()
-                            local moneyData
-                            for i, money in ipairs(game.Workspace.Ignored.Drop:GetChildren()) do
-                                if money and money ~= nil and money.Name == "MoneyDrop" and money:FindFirstChild('ClickDetector') and (money.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).magnitude <= 20 then
-                                    moneyData = money
-                                    local MoneyAmount = tonumber((money.BillboardGui.TextLabel.Text:gsub("[^%w%s_]+", "")):split(" ")[1])
-                                    --game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = money.CFrame + Vector3.new(3, 3, 3)
-                                    --repeat wait()
-                                        if money and money:FindFirstChild('ClickDetector')  and (money.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).magnitude <= 20 then
-                                            fireclickdetector(money.ClickDetector)
-                                            --wait()
-                                        --else
-                                            --break
-                                        end
-                                    --until not money or money == nil or not money:FindFirstChild('ClickDetector') or (money.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).magnitude > 19 do end
-                                end
-                            end
-                        until not moneyData or moneyData == nil do end
-                    end
-                end
-            end
-            print("All done 1")
-    
-            --------------------------------------
-            if (function()
-                    for _, v in pairs(game.Workspace.Cashiers:GetChildren()) do
-                        if v and v:FindFirstChild('Open') then
-                            local invinc = Vector3.new(-624, 22, -286)
-                            local checkinvinc = Vector3.new(v.Open.CFrame)
-                            if v:FindFirstChild('Humanoid') and v.Humanoid.Health >= 0 then
-                                return true
-                            end
-                        end
-                    end
-                end)() then else
-            end
-            -------------------------------------------------------
-            print("All done 2")
-        end
-    end)
-    
-    local names = {
-        "TeleportDetect",
-        "OneMoreTime",
-        "CHECKER_1",
-        "Kick",
-        "BreathingHAMON",
-        "BR_KICKPC",
-        "KICKREMOTE",
-        "CHECKER",
-        "PERMAIDBAN",
-        "checkingSPEED",
-        "GUI_CHECK",
-        "BANREMOTE",
-    }
-    
-    local old
-    old = hookmetamethod(game, "__namecall", function(...)
-        local args = {...}
-        local namecallmethod = getnamecallmethod()
-        if namecallmethod == "FireServer" and args[1] == game.ReplicatedStorage.MainEvent then
-            if table.find(names, args[2]) then
-                return ''
-            end
-        end
-        return old(...)
-    end)
-    
-end)
