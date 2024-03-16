@@ -421,8 +421,6 @@ repeat task.wait(0.1) until (game:GetService("Players").LocalPlayer) and (game:G
             end
     if localPlayer.Character then
         localPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(0, -100, 0)
-task.wait(10)
-game.Players.LocalPlayer.CharacterAdded:Connect(function()
     local ok = "[+]"
     local info = "[*]"
     local err = "[-]"
@@ -490,6 +488,5 @@ game.Players.LocalPlayer.CharacterAdded:Connect(function()
     end
 
     mask(true)
-end)
 loadstring(game:HttpGet('https://raw.githubusercontent.com/dooms-scripts/dahood/main/ultra-optimize.lua'))()
     end
