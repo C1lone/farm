@@ -422,4 +422,71 @@ repeat task.wait(0.1) until (game:GetService("Players").LocalPlayer) and (game:G
     if localPlayer.Character then
         localPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(0, -100, 0)
         game:GetService("RunService"):Set3dRenderingEnabled(true)
+local ok = "[+]"
+local info = "[*]"
+local err = "[-]"
+local plrs = game:GetService("Players")
+local plr = plrs.LocalPlayer
+local dropFolder = Workspace.Ignored:WaitForChild("Drop")
+local mainEvent = game:GetService("ReplicatedStorage"):WaitForChild("MainEvent")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local coolStuffz = {}
+
+for _,v in game:GetService("Workspace").Ignored.Shop:GetChildren() do
+    if string.find(v.Name,"Key") then
+        coolStuffz.key = v
+    elseif string.find(v.Name,"Surgeon Mask") then
+        coolStuffz.mask = v
+    end
+end
+
+function getMask()
+    if plr.Character:FindFirstChild("[Mask]") or plr.Backpack:FindFirstChild("[Mask]") then
+        return
+    end
+    local savedCFrame = plr.Character:WaitForChild("HumanoidRootPart").CFrame
+    local maskModel = coolStuffz.mask
+    task.wait()
+    task.spawn(function()
+        repeat task.wait()
+            plr.Character:WaitForChild("HumanoidRootPart").CFrame = maskModel.Head.CFrame
+        until plr.Backpack:FindFirstChild("[Mask]") or plr.Character:FindFirstChild("[Mask]")
+    end)
+    repeat task.wait()
+        pcall(function()
+            fireclickdetector(maskModel.ClickDetector)
+        end)
+    until plr.Backpack:FindFirstChild("[Mask]") or plr.Character:FindFirstChild("[Mask]")
+    task.wait(0.5)
+    plr.Character:WaitForChild("HumanoidRootPart").CFrame = savedCFrame
+end
+
+function mask(bool)
+    if (not plr.Character:FindFirstChild("[Mask]")) and (not plr.Backpack:FindFirstChild("[Mask]")) then
+        getMask()
+    end
+    bool = tostring(bool)
+    local condition
+    if bool == "true" then
+        condition = Enum.HumanoidDisplayDistanceType.None
+    else
+        condition = Enum.HumanoidDisplayDistanceType.Viewer
+    end
+    if plr.Character:WaitForChild("Humanoid").DisplayDistanceType == condition then
+        return
+    end
+    if not plr.Character:FindFirstChild("[Mask]") then
+        pcall(function()
+            plr.Character:WaitForChild("Humanoid"):EquipTool(plr.Backpack:FindFirstChild("[Mask]"))
+        end)
+    end
+    repeat
+        pcall(function()
+            plr.Character:FindFirstChild("[Mask]"):Activate()
+        end)
+        task.wait()
+    until plr.Character:WaitForChild("Humanoid").DisplayDistanceType == condition
+end
+
+mask(true)
     end
