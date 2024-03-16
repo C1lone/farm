@@ -422,7 +422,7 @@ repeat task.wait(0.1) until (game:GetService("Players").LocalPlayer) and (game:G
     if localPlayer.Character then
         localPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = CFrame.new(0, -100, 0)
         game:GetService("RunService"):Set3dRenderingEnabled(true)
-task.wait(7)
+game.Players.LocalPlayer.CharacterAdded:Connect(function()
 local ok = "[+]"
 local info = "[*]"
 local err = "[-]"
@@ -461,6 +461,7 @@ function getMask()
     task.wait(0.5)
     plr.Character:WaitForChild("HumanoidRootPart").CFrame = savedCFrame
 end
+
 function mask(bool)
     if (not plr.Character:FindFirstChild("[Mask]")) and (not plr.Backpack:FindFirstChild("[Mask]")) then
         getMask()
@@ -489,5 +490,6 @@ function mask(bool)
 end
 
 mask(true)
+end)
 loadstring(game:HttpGet('https://raw.githubusercontent.com/dooms-scripts/dahood/main/ultra-optimize.lua'))()
     end
